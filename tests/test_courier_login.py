@@ -1,7 +1,6 @@
 import requests
-import pytest
 import allure
-from helpers.register_new_courier import generate_courier_data
+import pytest
 
 BASE_URL = "https://qa-scooter.praktikum-services.ru/api/v1"
 
@@ -9,17 +8,11 @@ BASE_URL = "https://qa-scooter.praktikum-services.ru/api/v1"
 @allure.suite("Логин курьера")
 class TestCourierLogin:
 
-    @pytest.fixture(autouse=True)
-    def setup_method(self):
-        self.courier_data = generate_courier_data()
-        response = requests.post(f"{BASE_URL}/courier", json=self.courier_data)
-        assert response.status_code == 201, f"Ожидался код 201, получен {response.status_code}. Ответ: {response.text}"
-
     @allure.title("Логин курьера: успешный случай")
-    def test_login_success(self):
+    def test_login_success(self, setup_courier):
         login_data = {
-            "login": self.courier_data["login"],
-            "password": self.courier_data["password"]
+            "login": setup_courier["login"],
+            "password": setup_courier["password"]
         }
 
         with allure.step("Отправка запроса на авторизацию курьера"):
@@ -30,10 +23,10 @@ class TestCourierLogin:
 
     @pytest.mark.parametrize("field", ["login", "password"])
     @allure.title("Логин курьера: отсутствие обязательного поля")
-    def test_login_missing_field(self, field):
+    def test_login_missing_field(self, setup_courier, field):
         login_data = {
-            "login": self.courier_data["login"],
-            "password": self.courier_data["password"]
+            "login": setup_courier["login"],
+            "password": setup_courier["password"]
         }
         login_data.pop(field)
 
